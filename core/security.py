@@ -6,7 +6,6 @@ from passlib.context import CryptContext
 from core.config import get_settings
 from schemas.auth import TokenData
 
-settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -19,6 +18,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 
 def create_access_token(subject: str, expires_delta: timedelta | None = None) -> str:
+    settings = get_settings()
     expire = datetime.now(timezone.utc) + (
         expires_delta
         if expires_delta is not None
@@ -29,6 +29,7 @@ def create_access_token(subject: str, expires_delta: timedelta | None = None) ->
 
 
 def decode_access_token(token: str) -> TokenData:
+    settings = get_settings()
     try:
         payload = jwt.decode(
             token,

@@ -107,27 +107,39 @@ jobs:
       - name: Run image smoke
         run: |
           docker rm -f devopshelper-ci-app >/dev/null 2>&1 || true
-          # Pass values explicitly — bare `-e VAR` can pick a short secret from the runner env.
+
+          # Write an env-file so runner machine env cannot override CI secrets.
+          cat > /tmp/devopshelper-ci.env <<'EOF'
+          APP_NAME=DevOpsHelper
+          APP_HOST=127.0.0.1
+          APP_PORT=18000
+          DEBUG=false
+          WEB_DIST=web/dist
+          POSTGRES_USER=postgres
+          POSTGRES_PASSWORD=postgres
+          POSTGRES_HOST=127.0.0.1
+          POSTGRES_PORT=15432
+          POSTGRES_DB=devops_db_ci
+          JWT_SECRET_KEY=ci-smoke-secret-at-least-24-chars
+          JWT_ALGORITHM=HS256
+          JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60
+          EOF
+          # Strip leading indentation from the heredoc body.
+          sed -i 's/^[[:space:]]\+//' /tmp/devopshelper-ci.env
+
           docker run -d --name devopshelper-ci-app --network host \
-            -e "APP_NAME=${APP_NAME}" \
-            -e "APP_HOST=${APP_HOST}" \
-            -e "APP_PORT=${APP_PORT}" \
-            -e "DEBUG=${DEBUG}" \
-            -e "WEB_DIST=${WEB_DIST}" \
-            -e "POSTGRES_USER=${POSTGRES_USER}" \
-            -e "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" \
-            -e "POSTGRES_HOST=${POSTGRES_HOST}" \
-            -e "POSTGRES_PORT=${POSTGRES_PORT}" \
-            -e "POSTGRES_DB=${POSTGRES_DB}" \
-            -e "JWT_SECRET_KEY=ci-smoke-secret-at-least-24-chars" \
-            -e "JWT_ALGORITHM=HS256" \
-            -e "JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60" \
+            --env-file /tmp/devopshelper-ci.env \
             "devopshelper:${GITHUB_SHA}"
+
           for i in $(seq 1 30); do
             if curl -fsS "http://127.0.0.1:${APP_PORT}/api/health"; then
               echo
               curl -fsS "http://127.0.0.1:${APP_PORT}/" | grep -qiE '<!DOCTYPE html|<html'
               exit 0
+            fi
+            # If the process already exited, stop waiting early.
+            if [ "$(docker inspect -f '{{.State.Running}}' devopshelper-ci-app 2>/dev/null || echo false)" != "true" ]; then
+              break
             fi
             sleep 1
           done

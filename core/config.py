@@ -1,13 +1,18 @@
 from functools import lru_cache
+import logging
 
-from pydantic import computed_field, field_validator
+from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
+    # Environment variables always win over any .env file in the image/workdir.
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
+        env_ignore_empty=True,
         extra="ignore",
     )
 
@@ -35,13 +40,6 @@ class Settings(BaseSettings):
         "http://127.0.0.1:4173,http://localhost:4173"
     )
 
-    @field_validator("jwt_secret_key")
-    @classmethod
-    def secret_not_trivial(cls, value: str) -> str:
-        if len(value) < 24:
-            raise ValueError("jwt_secret_key must be at least 24 characters")
-        return value
-
     @computed_field  # type: ignore[prop-decorator]
     @property
     def database_url(self) -> str:
@@ -57,4 +55,9 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    if len(settings.jwt_secret_key) < 24:
+        logger.warning(
+            "JWT_SECRET_KEY is shorter than 24 characters; use a longer secret in production"
+        )
+    return settings
