@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import ComingSoon from '../components/ComingSoon.vue'
+import HomeLanding from '../components/HomeLanding.vue'
 </script>
 
 <template>
-  <ComingSoon />
+  <HomeLanding />
 </template>
