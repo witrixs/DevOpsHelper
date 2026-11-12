@@ -1,0 +1,9 @@
+# Local development only. Production uses deploy/compose.yml + prebuilt image.
+services:
+  app:
+    build: .
+    container_name: devopshelper-app
+    network_mode: host
+    env_file:
+      - .env
+    restart: unless-stopped

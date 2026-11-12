@@ -1,0 +1,17 @@
+services:
+  app:
+    image: ${DEVOPSHELPER_IMAGE:?Release image is required}
+    network_mode: host
+    env_file:
+      - /opt/devopshelper/.env
+    volumes:
+      - /opt/devopshelper/assets:/app/web/dist/assets:ro
+    restart: unless-stopped
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
