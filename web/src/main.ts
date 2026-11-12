@@ -4,7 +4,10 @@ import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
 import App from './App.vue'
-import router from './router'
+import router from './router/router'
+import { applyTheme, getStoredThemePreference } from './lib/theme'
+
+applyTheme(getStoredThemePreference())
 
 const app = createApp(App)
 
