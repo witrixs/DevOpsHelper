@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: 1. Backend
+    runs-on: [self-hosted, vps]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          python3 -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+
+      - name: Import check
+        run: .venv/bin/python -c "from main import app; print(app.title)"
+
+  frontend:
+    name: 2. Frontend
+    needs: backend
+    runs-on: [self-hosted, vps]
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
+
+      - name: Build
+        env:
+          VITE_API_URL: ""
+        run: npm run build
+
+  docker:
+    name: 3. Docker build
+    needs: frontend
+    runs-on: [self-hosted, vps]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release image
+        run: |
+          docker build \
+            -t "devopshelper:${GITHUB_SHA}" \
+            -t devopshelper:ci \
+            .
+
+  smoke:
+    name: 4. Smoke (image)
+    needs: docker
+    runs-on: [self-hosted, vps]
+    env:
+      APP_NAME: DevOpsHelper
+      APP_HOST: 127.0.0.1
+      APP_PORT: "18000"
+      DEBUG: "false"
+      WEB_DIST: web/dist
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST: 127.0.0.1
+      POSTGRES_PORT: "15432"
+      POSTGRES_DB: devops_db_ci
+      JWT_SECRET_KEY: ci-smoke-secret
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start CI Postgres
+        run: |
+          docker rm -f devopshelper-ci-db >/dev/null 2>&1 || true
+          docker run -d --name devopshelper-ci-db \
+            -e POSTGRES_USER="$POSTGRES_USER" \
+            -e POSTGRES_PASSWORD="$POSTGRES_PASSWORD" \
+            -e POSTGRES_DB="$POSTGRES_DB" \
+            -p "${POSTGRES_PORT}:5432" \
+            postgres:18
+          for i in $(seq 1 30); do
+            if docker exec devopshelper-ci-db pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"; then
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "CI Postgres did not become ready"
+          exit 1
+
+      - name: Run image smoke
+        run: |
+          docker rm -f devopshelper-ci-app >/dev/null 2>&1 || true
+          docker run -d --name devopshelper-ci-app --network host \
+            -e APP_NAME -e APP_HOST -e APP_PORT -e DEBUG -e WEB_DIST \
+            -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST \
+            -e POSTGRES_PORT -e POSTGRES_DB \
+            -e JWT_SECRET_KEY -e JWT_ALGORITHM -e JWT_ACCESS_TOKEN_EXPIRE_MINUTES \
+            "devopshelper:${GITHUB_SHA}"
+          for i in $(seq 1 30); do
+            if curl -fsS "http://127.0.0.1:${APP_PORT}/api/health"; then
+              echo
+              curl -fsS "http://127.0.0.1:${APP_PORT}/" | grep -qiE '<!DOCTYPE html|<html'
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs devopshelper-ci-app || true
+          exit 1
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f devopshelper-ci-app >/dev/null 2>&1 || true
+          docker rm -f devopshelper-ci-db >/dev/null 2>&1 || true
+
+  deploy:
+    name: 5. Deploy production
+    needs: smoke
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: [self-hosted, vps]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publish image to production
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+        run: bash deploy/publish.sh

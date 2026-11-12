@@ -1,0 +1,28 @@
+name: Deploy
+
+# Manual redeploy of the current commit image (rebuild on CI runner → prod).
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Manual production deploy
+    runs-on: [self-hosted, vps]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build release image
+        run: docker build -t "devopshelper:${GITHUB_SHA}" .
+
+      - name: Publish image to production
+        env:
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
+          DEPLOY_USER: ${{ vars.DEPLOY_USER }}
+          DEPLOY_PORT: ${{ vars.DEPLOY_PORT }}
+        run: bash deploy/publish.sh
