@@ -1,13 +1,90 @@
 :root {
-  --dh-ink: #ecf7f4;
-  --dh-muted: rgba(226, 240, 236, 0.86);
-  --dh-accent: #3fd0b6;
-  --dh-deep: #061016;
-  --dh-font-display: 'Syne', 'Avenir Next', 'Segoe UI', sans-serif;
-  --dh-font-body: 'Manrope', 'Avenir Next', 'Segoe UI', sans-serif;
+  --dh-font-display: 'Outfit', 'Avenir Next', sans-serif;
+  --dh-font-body: 'Plus Jakarta Sans', 'Avenir Next', sans-serif;
+  --dh-font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono',
+    'Courier New', monospace;
+  --dh-radius: 10px;
+  --dh-radius-sm: 6px;
 
-  --color-background: var(--dh-deep);
+  /* dark (default until FOUC script / theme runs) */
+  --dh-bg: #050505;
+  --dh-surface: #0e0e0f;
+  --dh-elevated: #151517;
+  --dh-sidebar: #080808;
+  --dh-popover: #151517;
+  --dh-popover-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --dh-border: #242428;
+  --dh-border-strong: #323238;
+  --dh-ink: #f4f4f5;
+  --dh-muted: #a1a1aa;
+  --dh-faint: #71717a;
+  --dh-accent: #7dd3fc;
+  --dh-accent-soft: rgba(125, 211, 252, 0.12);
+  --dh-hover-bg: rgba(255, 255, 255, 0.04);
+  --dh-nav-active-bg: #1a1a1d;
+  --dh-nav-active-fg: #ffffff;
+  --dh-nav-active-bar: #ffffff;
+  --dh-toc-fg: #888888;
+  --dh-toc-active: #ffffff;
+  --dh-toc-rail: #27272a;
+  --dh-heading: #ffffff;
+  --dh-body: #c4c4cc;
+  --dh-code-inline-bg: #1a1a1d;
+  --dh-code-inline-fg: #e4e4e7;
+  --dh-code-bg: #191919;
+  --dh-code-border: #66666633;
+  --dh-code-fg: #e1e4e8;
+  --dh-code-copy: #b3b3b3cc;
+  --dh-code-copy-hover: #e6e6e6;
+  --dh-tok-keyword: #b392f0;
+  --dh-tok-flag: #79b8ff;
+  --dh-tok-string: #9ecbff;
+  --dh-tok-operator: #f97583;
+  --dh-tok-comment: #6a737d;
+  --dh-btn-primary-bg: #f4f4f5;
+  --dh-btn-primary-fg: #09090b;
+
+  --color-background: var(--dh-bg);
   --color-text: var(--dh-ink);
+}
+
+html[data-theme='light'] {
+  --dh-bg: #ffffff;
+  --dh-surface: #f5f5f5;
+  --dh-elevated: #f1f1f1;
+  --dh-sidebar: #f5f5f5;
+  --dh-popover: #ffffff;
+  --dh-popover-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --dh-border: #e5e5e5;
+  --dh-border-strong: #d4d4d4;
+  --dh-ink: #0a0a0a;
+  --dh-muted: #525252;
+  --dh-faint: #737373;
+  --dh-accent: #0284c7;
+  --dh-accent-soft: rgba(2, 132, 199, 0.1);
+  --dh-hover-bg: rgba(0, 0, 0, 0.04);
+  --dh-nav-active-bg: #e8e8e8;
+  --dh-nav-active-fg: #0a0a0a;
+  --dh-nav-active-bar: #171717;
+  --dh-toc-fg: #737373;
+  --dh-toc-active: #0a0a0a;
+  --dh-toc-rail: #e5e5e5;
+  --dh-heading: #0a0a0a;
+  --dh-body: #404040;
+  --dh-code-inline-bg: #f1f1f1;
+  --dh-code-inline-fg: #24292e;
+  --dh-code-bg: #f1f1f1;
+  --dh-code-border: #cccccc80;
+  --dh-code-fg: #24292e;
+  --dh-code-copy: #737373;
+  --dh-code-copy-hover: #0a0a0a;
+  --dh-tok-keyword: #6f42c1;
+  --dh-tok-flag: #005cc5;
+  --dh-tok-string: #032f62;
+  --dh-tok-operator: #d73a49;
+  --dh-tok-comment: #6a737d;
+  --dh-btn-primary-bg: #171717;
+  --dh-btn-primary-fg: #fafafa;
 }
 
 *,
@@ -23,6 +100,10 @@ body,
   min-height: 100%;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   min-height: 100vh;
   min-height: 100dvh;
@@ -30,8 +111,12 @@ body {
   background: var(--color-background);
   font-family: var(--dh-font-body);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
 }

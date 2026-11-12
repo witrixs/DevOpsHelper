@@ -2,17 +2,67 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#050505" />
+    <meta name="apple-mobile-web-app-title" content="DevOpsHelper" />
+    <meta name="application-name" content="DevOpsHelper" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="DevOpsHelper — помощник для установки Docker, Kubernetes, Nginx и других приложений на серверах. Сейчас в разработке."
+      content="DevOpsHelper — инструкции для Linux: установка и настройка приложений, сервисов и команд без хаоса."
     />
-    <title>DevOpsHelper — в разработке</title>
+    <title>DevOpsHelper — инструкции для Linux</title>
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="ru_RU" />
+    <meta property="og:site_name" content="DevOpsHelper" />
+    <meta property="og:title" content="DevOpsHelper — инструкции для Linux" />
+    <meta
+      property="og:description"
+      content="Чистые Markdown-гайды по Linux: установка приложений, настройка сервисов и команды, которые можно сразу копировать."
+    />
+    <meta property="og:image" content="/og-images.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1672" />
+    <meta property="og:image:height" content="941" />
+    <meta property="og:image:alt" content="DevOpsHelper — инструкции для Linux" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DevOpsHelper — инструкции для Linux" />
+    <meta
+      name="twitter:description"
+      content="Чистые Markdown-гайды по Linux: установка приложений, настройка сервисов и команды, которые можно сразу копировать."
+    />
+    <meta name="twitter:image" content="/og-images.png" />
+    <meta name="twitter:image:alt" content="DevOpsHelper — инструкции для Linux" />
+    <script>
+      ;(function () {
+        try {
+          var key = 'dh-theme'
+          var pref = localStorage.getItem(key) || 'system'
+          if (pref !== 'light' && pref !== 'dark' && pref !== 'system') pref = 'system'
+          var dark =
+            pref === 'dark' ||
+            (pref !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          var theme = dark ? 'dark' : 'light'
+          document.documentElement.dataset.theme = theme
+          document.documentElement.dataset.themePref = pref
+          document.documentElement.style.colorScheme = theme
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark'
+          document.documentElement.dataset.themePref = 'system'
+        }
+      })()
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600&family=Syne:wght@600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
   </head>

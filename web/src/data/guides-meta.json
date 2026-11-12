@@ -1,0 +1,38 @@
+[
+  {
+    "slug": "docker",
+    "title": "Docker",
+    "blurb": "Движок, Compose и первые контейнеры",
+    "description": "Установка Docker Engine, Docker Compose и запуск первых контейнеров на Linux.",
+    "time": "12 мин",
+    "group": "Контейнеры",
+    "ready": true
+  },
+  {
+    "slug": "nginx",
+    "title": "Nginx",
+    "blurb": "Прокси, TLS и раздача статики",
+    "description": "Настройка Nginx как reverse proxy, TLS и раздача статики на Linux.",
+    "time": "10 мин",
+    "group": "Сеть",
+    "ready": false
+  },
+  {
+    "slug": "postgres",
+    "title": "PostgreSQL",
+    "blurb": "Установка, роли и бэкапы",
+    "description": "Установка PostgreSQL, роли, доступы и базовые бэкапы на Linux.",
+    "time": "15 мин",
+    "group": "Данные",
+    "ready": false
+  },
+  {
+    "slug": "firewall",
+    "title": "UFW / firewalld",
+    "blurb": "Базовая защита портов на сервере",
+    "description": "Базовая настройка UFW и firewalld: порты, правила и защита Linux-сервера.",
+    "time": "8 мин",
+    "group": "Безопасность",
+    "ready": false
+  }
+]
