@@ -23,6 +23,8 @@ jobs:
           .venv/bin/pip install -r requirements.txt
 
       - name: Import check
+        env:
+          JWT_SECRET_KEY: ci-backend-import-secret-key-32b
         run: .venv/bin/python -c "from main import app; print(app.title)"
 
   frontend:
@@ -105,11 +107,21 @@ jobs:
       - name: Run image smoke
         run: |
           docker rm -f devopshelper-ci-app >/dev/null 2>&1 || true
+          # Pass values explicitly — bare `-e VAR` can pick a short secret from the runner env.
           docker run -d --name devopshelper-ci-app --network host \
-            -e APP_NAME -e APP_HOST -e APP_PORT -e DEBUG -e WEB_DIST \
-            -e POSTGRES_USER -e POSTGRES_PASSWORD -e POSTGRES_HOST \
-            -e POSTGRES_PORT -e POSTGRES_DB \
-            -e JWT_SECRET_KEY -e JWT_ALGORITHM -e JWT_ACCESS_TOKEN_EXPIRE_MINUTES \
+            -e "APP_NAME=${APP_NAME}" \
+            -e "APP_HOST=${APP_HOST}" \
+            -e "APP_PORT=${APP_PORT}" \
+            -e "DEBUG=${DEBUG}" \
+            -e "WEB_DIST=${WEB_DIST}" \
+            -e "POSTGRES_USER=${POSTGRES_USER}" \
+            -e "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}" \
+            -e "POSTGRES_HOST=${POSTGRES_HOST}" \
+            -e "POSTGRES_PORT=${POSTGRES_PORT}" \
+            -e "POSTGRES_DB=${POSTGRES_DB}" \
+            -e "JWT_SECRET_KEY=ci-smoke-secret-at-least-24-chars" \
+            -e "JWT_ALGORITHM=HS256" \
+            -e "JWT_ACCESS_TOKEN_EXPIRE_MINUTES=60" \
             "devopshelper:${GITHUB_SHA}"
           for i in $(seq 1 30); do
             if curl -fsS "http://127.0.0.1:${APP_PORT}/api/health"; then
@@ -119,7 +131,9 @@ jobs:
             fi
             sleep 1
           done
+          echo "Smoke failed; container logs:"
           docker logs devopshelper-ci-app || true
+          docker inspect devopshelper-ci-app --format '{{json .Config.Env}}' || true
           exit 1
 
       - name: Cleanup
